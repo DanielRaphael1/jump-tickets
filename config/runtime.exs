@@ -75,6 +75,13 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
+        check_origin: [
+      "http://localhost",
+      "http://127.0.0.1",
+      "https://#{host}",
+      "https://34fd-2a06-c701-7475-ef00-d0dd-7eaf-2573-a7f6.ngrok-free.app"
+    ],
+
     secret_key_base: secret_key_base
 
   # ## SSL Support

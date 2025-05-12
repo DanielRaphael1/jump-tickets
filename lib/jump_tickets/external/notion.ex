@@ -1,6 +1,7 @@
 defmodule JumpTickets.External.Notion do
   alias JumpTickets.Ticket
   alias Notionex
+  require Logger
 
   def query_db() do
     db_id = Application.get_env(:jump_tickets, :notion_db_id)
@@ -33,13 +34,29 @@ defmodule JumpTickets.External.Notion do
     end
   end
 
-  def get_ticket_by_page_id(page_id) do
-    case Notionex.API.retrieve_page(%{page_id: page_id}) do
-      %Notionex.Object.Page{} = page ->
-        __MODULE__.Parser.parse_ticket_page(page)
+  def get_ticket_by_page_id(database_id) do
+    query = %{
+    database_id: database_id,
+    filter: %{
+      property: "Done",
+      checkbox: %{equals: true}
+    },
+    page_size: 1
+  }
 
-      _ ->
-        {:error, "Failed to get page #{page_id}"}
+  case Notionex.API.query_database(query) do
+    %Notionex.Object.List{results: [first | _]} ->
+      Logger.debug("Found 'Done' page: #{inspect(first)}")
+      {:ok, JumpTickets.External.Notion.Parser.parse_ticket_page(first)}
+
+
+    %Notionex.Object.List{results: []} ->
+      Logger.error("No pages marked as Done found in database")
+      {:error, "No pages marked as Done found in database"}
+
+    other ->
+      Logger.error("Unexpected response structure: #{inspect(other)}")
+      {:error, "Unexpected response structure"}
     end
   end
 

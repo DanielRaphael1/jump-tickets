@@ -56,11 +56,10 @@ defmodule JumpTickets.Ticket.DoneNotifier do
         parts = String.split(path, "/")
         channel_id = Enum.at(parts, 3)
         Slack.post_message(channel_id, message)
-
-      _ ->
+              _ ->
         {:error, :invalid_slack_channel_url}
     end
-  end
+end
 
   defp parse_intercom_conversations(nil), do: []
 
